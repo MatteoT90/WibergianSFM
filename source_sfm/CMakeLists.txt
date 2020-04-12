@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(sfm)
+set(CMAKE_CXX_STANDARD 14)
+
+list(APPEND CMAKE_PREFIX_PATH "/home/hangryrat/Documents/wibergian_sfm/my_bin/share/openMVG/cmake")
+set(OpenMVG_DIR ${/home/hangryrat/Documents/wibergian_sfm/my_bin/share/openMVG/cmake})
+
+find_package(OpenMVG REQUIRED)
+
+FIND_PACKAGE(SWIG REQUIRED)
+INCLUDE(${SWIG_USE_FILE})
+
+# FIND_PACKAGE(PythonLibs 3.6 REQUIRED)
+FIND_PACKAGE(PythonLibs)
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+SET(CMAKE_SWIG_FLAGS "")
+LINK_DIRECTORIES(/usr/lib/x86_64-linux-gnu/)
+SET_SOURCE_FILES_PROPERTIES(sfm.i PROPERTIES CPLUSPLUS ON)
+SET_SOURCE_FILES_PROPERTIES(sfm.i PROPERTIES SWIG_FLAGS "-includeall")
+SWIG_ADD_MODULE(sfm python sfm.i sfm.cpp)
+SWIG_LINK_LIBRARIES(sfm
+    ${PYTHON_LIBRARIES}
+    OpenMVG::openMVG_sfm
+    OpenMVG::openMVG_matching
+    OpenMVG::openMVG_system
+    OpenMVG::openMVG_camera
+    OpenMVG::openMVG_stlplus
+    OpenMVG::openMVG_geometry
+    stdc++
+)
