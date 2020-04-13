@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 project(sfm)
 set(CMAKE_CXX_STANDARD 14)
 
-list(APPEND CMAKE_PREFIX_PATH "/home/hangryrat/Documents/wibergian_sfm/my_bin/share/openMVG/cmake")
-set(OpenMVG_DIR ${/home/hangryrat/Documents/wibergian_sfm/my_bin/share/openMVG/cmake})
-
 find_package(OpenMVG REQUIRED)
 
 FIND_PACKAGE(SWIG REQUIRED)
