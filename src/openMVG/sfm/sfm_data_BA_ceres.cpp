@@ -427,18 +427,18 @@ for(int mode; mode < 3; mode++)
     ceres_config_options.max_num_iterations = 500;
     ceres_config_options.preconditioner_type =
             static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
-//ceres_config_options.linear_solver_type =
-//static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
-    ceres_config_options.minimizer_type = ceres::TRUST_REGION;
-    ceres_config_options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+    ceres_config_options.linear_solver_type =
+    static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
+    // ceres_config_options.minimizer_type = ceres::TRUST_REGION;
+    // ceres_config_options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     ceres_config_options.sparse_linear_algebra_library_type =
             static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
     ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
     ceres_config_options.logging_type = ceres::SILENT;
     ceres_config_options.num_threads = ceres_options_.nb_threads_;
-#if CERES_VERSION_MAJOR < 2
+    #if CERES_VERSION_MAJOR < 2
     ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
-#endif
+    #endif
     ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
 
     ceres::Problem problem;
@@ -451,7 +451,7 @@ for(int mode; mode < 3; mode++)
         problem.AddParameterBlock(parameter_block, 6);
         if(mode == 0)
         {
-            std::cout << "Pippo\n";
+            //std::cout << "Pippo\n";
             // std::cout << "Running ba in mode 0 \n";
             std::vector<int> keep_constant;
             keep_constant.insert(keep_constant.end(), {0,1,2});
@@ -469,7 +469,7 @@ for(int mode; mode < 3; mode++)
         {
             // std::cout << "Not updating intrinsics \n";
             problem.SetParameterBlockConstant(parameter_block);
-            std::cout << "Paperinio\n";
+            // std::cout << "Paperinio\n";
         }
     }
 
@@ -483,16 +483,16 @@ for(int mode; mode < 3; mode++)
                          &map_cloud.at(track[ll])[0]);
     }
 
-    std::cout << "Ceres problem sizes :: " << problem.NumParameterBlocks() << " " << problem.NumParameters() << " " << problem.NumResidualBlocks() << " " << problem.NumResiduals() << "\n";
+    // std::cout << "Ceres problem sizes :: " << problem.NumParameterBlocks() << " " << problem.NumParameters() << " " << problem.NumResidualBlocks() << " " << problem.NumResiduals() << "\n";
 
     ceres::Solve(ceres_config_options, &problem, &summary);
-    std::cout << std::endl
-        << "Bundle Adjustment statistics (approximated RMSE):\n"
-        << " #residuals: " << summary.num_residuals << "\n"
-        << " Initial RMSE: " << std::sqrt( summary.initial_cost / summary.num_residuals) << "\n"
-        << " Final RMSE: " << std::sqrt( summary.final_cost / summary.num_residuals) << "\n"
-        << " Time (s): " << summary.total_time_in_seconds << "\n"
-        << std::endl;
+    //std::cout << std::endl
+    //    << "Bundle Adjustment statistics (approximated RMSE):\n"
+    //    << " #residuals: " << summary.num_residuals << "\n"
+    //    << " Initial RMSE: " << std::sqrt( summary.initial_cost / summary.num_residuals) << "\n"
+    //    << " Final RMSE: " << std::sqrt( summary.final_cost / summary.num_residuals) << "\n"
+    //    << " Time (s): " << summary.total_time_in_seconds << "\n"
+    //    << std::endl;
 }
 
 for (int ii = 0; ii < a/6; ii++){
@@ -520,10 +520,10 @@ ceres::Solver::Options ceres_config_options;
 ceres_config_options.max_num_iterations = 500;
 ceres_config_options.preconditioner_type =
         static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
-//ceres_config_options.linear_solver_type =
-//static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
-ceres_config_options.minimizer_type = ceres::TRUST_REGION;
-ceres_config_options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+ceres_config_options.linear_solver_type =
+static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
+// ceres_config_options.minimizer_type = ceres::TRUST_REGION;
+// ceres_config_options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
 ceres_config_options.sparse_linear_algebra_library_type =
         static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
 ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
