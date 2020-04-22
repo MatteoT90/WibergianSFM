@@ -196,12 +196,12 @@ void importdata(std::string sSfM_Data_Filename, double* poses3d, int d, double* 
 int ceresBA(double* poses3d, int a, double* intrinsics, int b, double* observation3d,
         int c, double* observation2d, int e, int* camera, int f, int* track, int g,
         int* vec_rows, int h, int* vec_cols, int i, double* vec_grad, int j, double* weights, int k,
-        double* cost, int m, double* residuals, int n, double* gradient, int o, double* rotation, int p, int mode)
+        double* cost, int m, double* residuals, int n, double* gradient, int o, int mode)
 {
 
     Bundle_Adjustment_Ceres bundle_adjustment_obj;
 
-    int oo = bundle_adjustment_obj.MyAdjust(poses3d, a, intrinsics, b, observation3d, c, observation2d, e, track, g, camera, f, vec_rows, h, vec_cols, i, vec_grad, j, weights, k, cost, m, residuals, n, gradient, o, rotation, p, mode);
+    int oo = bundle_adjustment_obj.MyAdjust(poses3d, a, intrinsics, b, observation3d, c, observation2d, e, track, g, camera, f, vec_rows, h, vec_cols, i, vec_grad, j, weights, k, cost, m, residuals, n, gradient, o, mode);
     return oo;
 }
 
