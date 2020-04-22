@@ -42,7 +42,7 @@ void importdata(std::string sSfM_Data_Filename, double* poses3d, int po, double*
 int ceresBA(double* poses3d, int po, double* intrinsics, int in, double* observation3d,
             int o1, double* observation2d, int o2, int* camera, int ca, int* track, int tr,
             int* vec_rows, int vr, int* vec_cols, int vc, double* vec_grad, int vg, double* weights, int k,
-            double* cost, int m, double* residuals, int n, double* gradient, int o, double* rotations, int p, int mode);
+            double* cost, int m, double* residuals, int n, double* gradient, int o, int mode);
 
 int preprocessing(std::string sSfM_Data_Filename, std::string sMatchesDir, std::string sOutDir, std::string dataname);
 
