@@ -96,7 +96,6 @@ class Bundle_Adjustment_Ceres : public Bundle_Adjustment
       double* cost, int m,
       double* residuals, int n,
       double* gradient, int o,
-      double* rotations, int p,
       int mode
     );
 
