@@ -1,0 +1,44 @@
+/home/hangryrat/.clion/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/hangryrat/cvssp/Docker/WibergianSFM/source_sfm
+-- ----
+-- OpenMVG Find_Package
+-- ----
+-- Found OpenMVG version: 1.5.0
+-- Installed in: /home/hangryrat/.openmvg
+-- ----
+-- Found SWIG: /usr/bin/swig4.0 (found version "4.0.1") 
+-- Could NOT find PythonLibs (missing: PYTHON_LIBRARIES PYTHON_INCLUDE_DIRS) 
+CMake Deprecation Warning at /home/hangryrat/.clion/bin/cmake/linux/share/cmake-3.16/Modules/UseSWIG.cmake:566 (message):
+  SWIG_ADD_MODULE is deprecated.  Use SWIG_ADD_LIBRARY instead.
+Call Stack (most recent call first):
+  CMakeLists.txt:21 (SWIG_ADD_MODULE)
+
+
+CMake Warning (dev) at /home/hangryrat/.clion/bin/cmake/linux/share/cmake-3.16/Modules/UseSWIG.cmake:607 (message):
+  Policy CMP0078 is not set: UseSWIG generates standard target names.  Run
+  "cmake --help-policy CMP0078" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/hangryrat/.clion/bin/cmake/linux/share/cmake-3.16/Modules/UseSWIG.cmake:567 (swig_add_library)
+  CMakeLists.txt:21 (SWIG_ADD_MODULE)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /home/hangryrat/.clion/bin/cmake/linux/share/cmake-3.16/Modules/UseSWIG.cmake:460 (message):
+  Policy CMP0086 is not set: UseSWIG honors SWIG_MODULE_NAME via -module
+  flag.  Run "cmake --help-policy CMP0086" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/hangryrat/.clion/bin/cmake/linux/share/cmake-3.16/Modules/UseSWIG.cmake:702 (SWIG_ADD_SOURCE_TO_MODULE)
+  /home/hangryrat/.clion/bin/cmake/linux/share/cmake-3.16/Modules/UseSWIG.cmake:567 (swig_add_library)
+  CMakeLists.txt:21 (SWIG_ADD_MODULE)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error: The following variables are used in this project, but they are set to NOTFOUND.
+Please set them or make sure they are set and tested correctly in the CMake files:
+PYTHON_LIBRARY (ADVANCED)
+    linked by target "_sfm" in directory /home/hangryrat/cvssp/Docker/WibergianSFM/source_sfm
+
+-- Configuring incomplete, errors occurred!
+See also "/home/hangryrat/cvssp/Docker/WibergianSFM/source_sfm/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "/home/hangryrat/cvssp/Docker/WibergianSFM/source_sfm/cmake-build-debug/CMakeFiles/CMakeError.log".

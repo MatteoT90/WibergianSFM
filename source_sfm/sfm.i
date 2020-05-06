@@ -12,20 +12,20 @@
 %}
 
 
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* poses3d, int po)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* intrinsics, int in)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* observation3d, int o1)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* observation2d, int o2)}
-%apply (int* INPLACE_ARRAY1, int DIM1) {(int* camera, int ca)}
-%apply (int* INPLACE_ARRAY1, int DIM1) {(int* track, int tr)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* pose, int l_pose)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* intrinsics, int l_int)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* cloud, int l_cloud)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* features, int l_feat)}
+%apply (int* INPLACE_ARRAY1, int DIM1) {(int* camera, int l_cam)}
+%apply (int* INPLACE_ARRAY1, int DIM1) {(int* track, int l_track)}
 %apply (int* INPLACE_ARRAY1, int DIM1) {(int* pcloud_idx, int pc)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* vec_grad, int vg)}
-%apply (int* INPLACE_ARRAY1, int DIM1) {(int* vec_cols, int vc)}
-%apply (int* INPLACE_ARRAY1, int DIM1) {(int* vec_rows, int vr)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* weights, int k)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* cost, int m)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* residuals, int n)}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* gradient, int o)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* vec_grad, int l_vg)}
+%apply (int* INPLACE_ARRAY1, int DIM1) {(int* vec_cols, int l_vc)}
+%apply (int* INPLACE_ARRAY1, int DIM1) {(int* vec_rows, int l_vr)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* weights, int l_w)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* cost, int l_cost)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* residuals, int l_res)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* gradient, int l_grad)}
 %apply (double* INPLACE_ARRAY1, int DIM1) {(double* rotations, int p)}
 
 %include "std_string.i"
@@ -36,14 +36,14 @@
 
 int fullBA( std::string sSfM_Data_Filename, std::string sMatchesDir, std::string sOutDir);
 
-void importdata(std::string sSfM_Data_Filename, double* poses3d, int po, double* intrinsics, int in,
-        double* observation3d, int o1, int* pcloud_idx, int pc, double* observation2d, int o2, int* camera, int ca, int* track, int tr);
+void import_data(std::string sSfM_Data_Filename, double* poses3d, int po, double* intrinsics, int in,
+        double* observation3d, int o1, int* pcloud_idx, int pc, double* observation2d, int o2, int* camera, int ca,
+        int* track, int tr);
 %newobject ceresBA;
-int ceresBA(double* poses3d, int po, double* intrinsics, int in, double* observation3d,
-            int o1, double* observation2d, int o2, int* camera, int ca, int* track, int tr,
-            int* vec_rows, int vr, int* vec_cols, int vc, double* vec_grad, int vg, double* weights, int k,
-            double* cost, int m, double* residuals, int n, double* gradient, int o, int mode);
+int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
+        int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w, int* vec_rows, int l_vr,
+        int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* cost, int l_cost, double* residuals, int l_res,
+        double* gradient, int l_grad, int run)
 
-int preprocessing(std::string sSfM_Data_Filename, std::string sMatchesDir, std::string sOutDir, std::string dataname);
-
-int sanity_BA(std::string sSfM_Data_Filename, std::string sOutDir, std::string dataname, int* vec_rows, int vr, int* vec_cols, int vc, double* vec_grad, int vg);
+int sanity_BA(std::string sSfM_Data_Filename, std::string sOutDir, std::string data_name, int* vec_rows,
+        int vr, int* vec_cols, int vc, double* vec_grad, int vg);
