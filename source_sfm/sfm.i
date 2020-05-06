@@ -43,7 +43,7 @@ void import_data(std::string sSfM_Data_Filename, double* poses3d, int po, double
 int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
         int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w, int* vec_rows, int l_vr,
         int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* cost, int l_cost, double* residuals, int l_res,
-        double* gradient, int l_grad, int run)
+	    double* gradient, int l_grad, int run);
 
 int sanity_BA(std::string sSfM_Data_Filename, std::string sOutDir, std::string data_name, int* vec_rows,
         int vr, int* vec_cols, int vc, double* vec_grad, int vg);
