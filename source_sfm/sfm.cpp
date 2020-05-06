@@ -190,7 +190,7 @@ int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* clo
 
     Bundle_Adjustment_Ceres bundle_adjustment_obj;
 
-    int oo = bundle_adjustment_obj.MyAdjust(pose, l_pose, intrinsics, l_int, cloud, l_cloud, features, camera, l_cam,
+    int oo = bundle_adjustment_obj.GlobalAdjust(pose, l_pose, intrinsics, l_int, cloud, l_cloud, features, camera, l_cam,
             l_feat, track, l_track, vec_rows, l_vr, vec_cols, l_vc, vec_grad, l_vg, weights, l_w, cost,
             l_cost, residuals, l_res, gradient, l_grad, run);
     return oo;
