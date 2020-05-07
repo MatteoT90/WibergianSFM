@@ -137,6 +137,10 @@ void import_data(std::string sSfM_Data_Filename, double* poses3d, int d, double*
         const Mat3 R = pose.rotation();
         double angleAxis[3];
         sfm::extract_rotation(R, angleAxis);
+	std::cout << "Rotation vector :: " << angleAxis[0] << " " << angleAxis[1] << " " << angleAxis[2] << std::endl;
+	std::cout << "Rotation matrix :: " << R.value[0] << " " <<  R.value[1] << " " <<  R.value[2] << " "
+			  <<  R.value[3] << " " <<  R.value[4] << " " <<  R.value[5] <<  R.value[6] << " "
+		  <<  R.value[7] << " " <<  R.value[8] << std::endl;
         for (int jj = 0; jj < 3; jj++){poses3d[indexPose*6+jj+1] = angleAxis[jj];}
         for (int jj = 0; jj < 3; jj++){poses3d[indexPose*6+jj+4] = t(jj);}
     }
@@ -182,16 +186,17 @@ void import_data(std::string sSfM_Data_Filename, double* poses3d, int d, double*
     return;
 }
 
-int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud,
-        int l_cloud, double* features, int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w,
-        int* vec_rows, int l_vr, int* vec_cols, int l_vc, double* vec_grad, int l_vg,
-        double* residuals, int l_res, double* gradient, int l_grad, int run)
+int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
+        int l_feat, int* cams, int l_cam, int* track, int l_track, double* weight, int l_w, int* vec_rows, int l_vr,
+        int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* residuals_out, int l_res, double* gradient_out,
+        int l_grad, int optimise)
 {
 
     Bundle_Adjustment_Ceres bundle_adjustment_obj;
 
-    int oo = bundle_adjustment_obj.GlobalAdjust(pose, l_pose, intrinsics, l_int, cloud, l_cloud, features, l_feat, camera, l_cam,
-            track, l_track, vec_rows, l_vr, vec_cols, l_vc, vec_grad, l_vg, weights, l_w, residuals, l_res, gradient, l_grad, run);
+    int oo = bundle_adjustment_obj.GlobalAdjust(pose, l_pose, intrinsics, l_int, cloud, l_cloud, features, l_feat, cams,
+            l_cam, track, l_track, weight, l_w, vec_rows, l_vr, vec_cols, l_vc, vec_grad, l_vg, residuals_out, l_res,
+            gradient_out, l_grad, optimise);
     return oo;
 }
 

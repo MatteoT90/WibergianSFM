@@ -82,8 +82,7 @@ class Bundle_Adjustment_Ceres : public Bundle_Adjustment
   );
 
   bool GlobalAdjust
-    (
-            double* pose, int l_pose,
+    (       double* pose, int l_pose,
             double* intrinsics, int l_int,
             double* cloud, int l_cloud,
             double* features, int l_feat,
