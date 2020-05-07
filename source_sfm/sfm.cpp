@@ -137,8 +137,6 @@ void import_data(std::string sSfM_Data_Filename, double* poses3d, int d, double*
         const Mat3 R = pose.rotation();
         double angleAxis[3];
         sfm::extract_rotation(R, angleAxis);
-	std::cout << "Rotation vector :: " << angleAxis[0] << " " << angleAxis[1] << " " << angleAxis[2] << std::endl;
-	std::cout << "Rotation matrix :: " << R[0] << " " <<  R[1] << " " <<  R[2] << " " <<  R[3] << " " <<  R[4] << " " <<  R[5] <<  R[6] << " " <<  R[7] << " " <<  R[8] << std::endl;
         for (int jj = 0; jj < 3; jj++){poses3d[indexPose*6+jj+1] = angleAxis[jj];}
         for (int jj = 0; jj < 3; jj++){poses3d[indexPose*6+jj+4] = t(jj);}
     }
