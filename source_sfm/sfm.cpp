@@ -120,7 +120,7 @@ int fullBA(std::string sSfM_Data_Filename, std::string sMatchesDir, std::string 
 
 void import_data(std::string sSfM_Data_Filename, double* poses3d, int d, double* intrinsics, int b,
                 double* observation3d, int a, int* pcloud_idx, int h, double* observation2d, int f,
-                int* camera, int c, int* track, int e)
+                int* camera, int c, int* track, int e, int* view, int vi, double* fullrot, int fr)
 {
     SfM_Data sfm_data;
     if (!Load(sfm_data, sSfM_Data_Filename, ESfM_Data(ALL))) {
@@ -128,7 +128,7 @@ void import_data(std::string sSfM_Data_Filename, double* poses3d, int d, double*
                   << "The input SfM_Data file \""<< sSfM_Data_Filename << "\" cannot be read." << std::endl;
         return;
     }
-
+    int pose_id = 0;
     for (auto & pose_it : sfm_data.poses)
     {
         const IndexT indexPose = pose_it.first;
@@ -137,8 +137,11 @@ void import_data(std::string sSfM_Data_Filename, double* poses3d, int d, double*
         const Mat3 R = pose.rotation();
         double angleAxis[3];
         sfm::extract_rotation(R, angleAxis);
-        for (int jj = 0; jj < 3; jj++){poses3d[indexPose*6+jj+1] = angleAxis[jj];}
-        for (int jj = 0; jj < 3; jj++){poses3d[indexPose*6+jj+4] = t(jj);}
+        for (int jj = 0; jj < 3; jj++){poses3d[pose_id*6+jj+1] = angleAxis[jj];}
+        for (int jj = 0; jj < 3; jj++){poses3d[pose_id*6+jj+4] = t(jj);}
+        for (int jj = 0; jj < 9; jj++){fullrot[pose_id*9+jj+1] = R(jj);}
+        view[pose_id] = indexPose;
+        pose_id++;
     }
 
     poses3d[0] = sfm_data.poses.size();
@@ -194,22 +197,4 @@ int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* clo
             l_cam, track, l_track, weight, l_w, vec_rows, l_vr, vec_cols, l_vc, vec_grad, l_vg, residuals_out, l_res,
             gradient_out, l_grad, optimise);
     return oo;
-}
-
-int sanity_BA(std::string sSfM_Data_Filename, std::string sOutDir, std::string data_name, int* vec_rows, int h,
-        int* vec_cols, int i, double* vec_grad, int j)
-{
-    SfM_Data sfm_data;
-    if (!Load(sfm_data, sSfM_Data_Filename, ESfM_Data(ALL))) {
-        std::cerr << std::endl
-                  << "The input SfM_Data file \""<< sSfM_Data_Filename << "\" cannot be read." << std::endl;
-        return 1;
-    }
-
-    Bundle_Adjustment_Ceres bundle_adjustment_obj;
-    int b_BA_Status;
-    b_BA_Status = bundle_adjustment_obj.Adjust(sfm_data, vec_rows, h, vec_cols, i, vec_grad, j);
-    Save(sfm_data,
-             stlplus::create_filespec(sOutDir, data_name, ".bin"),
-             ESfM_Data(ALL));
 }
