@@ -418,7 +418,7 @@ if(optimise != 0){
     {
         ceres::Solver::Summary summary;
 
-        ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
+        //ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
         ceres::Solver::Options ceres_config_options;
         ceres_config_options.max_num_iterations = 500;
         ceres_config_options.preconditioner_type =
@@ -472,13 +472,21 @@ if(optimise != 0){
         for(int ll = 0; ll < l_feat / 2; ll++)
         {
         ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
-        problem.AddResidualBlock(cost_function,
-                             p_LossFunction,
-                             &map_intrinsics.at(0)[0],
-                             &map_poses.at(cams[ll])[0],
-                             &map_cloud.at(track[ll])[0]);
-        }
+        //problem.AddResidualBlock(cost_function,
+        //                     p_LossFunction,
+        //                     &map_intrinsics.at(0)[0],
+        //                     &map_poses.at(cams[ll])[0],
+        //                     &map_cloud.at(track[ll])[0]);
+        //}
 
+	problem.AddResidualBlock(cost_function,
+				 NULL,
+				 &map_intrinsics.at(0)[0],
+				 &map_poses.at(cams[ll])[0],
+				 &map_cloud.at(track[ll])[0]);
+	}
+    
+	
         ceres::Solve(ceres_config_options, &problem, &summary);
         //std::cout << std::endl
         //    << "Bundle Adjustment statistics (approximated RMSE):\n"
@@ -511,7 +519,7 @@ std::vector <double> gradients;
 
 ceres::Problem eval_problem;
 
-ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
+//ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
 ceres::Solver::Options ceres_config_options;
 ceres_config_options.max_num_iterations = 500;
 ceres_config_options.preconditioner_type =
@@ -543,13 +551,21 @@ for (const auto & intrinsic_it : map_intrinsics)
 for(int ll = 0; ll < l_feat / 2; ll++)
 {
 ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
-eval_problem.AddResidualBlock(cost_function,
-                              p_LossFunction,
-                              &map_intrinsics.at(0)[0],
-                              &map_poses.at(cams[ll])[0],
-                              &map_cloud.at(track[ll])[0]);
-}
+//eval_problem.AddResidualBlock(cost_function,
+//                              p_LossFunction,
+//                              &map_intrinsics.at(0)[0],
+//                              &map_poses.at(cams[ll])[0],
+//                              &map_cloud.at(track[ll])[0]);
+//}
 
+eval_problem.AddResidualBlock(cost_function,
+			       NULL,
+			       &map_intrinsics.at(0)[0],
+			       &map_poses.at(cams[ll])[0],
+			       &map_cloud.at(track[ll])[0]);
+}
+  
+ 
 // problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacob);
 eval_problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, &residuals, &gradients, &jacob);
 
