@@ -1,0 +1,20 @@
+This repo contains the altered version of the OpenMVG pipeline, and the code to generate the swig wrapper.
+
+1) Compiling OpenMVG and its wrap
+  I reccomand a local installation in a custom directory; I have changed the cmake to install the versions of ceres, osi and other libraries 
+  used by the original authors of the pipeline.
+  
+  a) mkdir build && cd build
+  b) cmake -DCMAKE_INSTALL_PREFIX:STRING="$some_path_on_your_machine/my_bin" -DCMAKE_BUILD_TYPE=RELEASE ../src/
+  c) cmake --build . --target install
+  d) Add the my_build directory to your PATH and LD_PATH
+     export PATH=$some_path_on_your_machine/my_bin/bin:$PATH
+     export LD_LIBRARY_PATH=$some_path_on_your_machine/my_bin/lib/:$LD_LIBRARY_PATH
+  e) cd .. && mkdir build_sfm && cd build_sfm
+  f) cmake ../source_sfm . && make
+  g) You now have the wrapper files, just copy sfm.py and _sfm.so to the pycode directory.
+ 2) Running the pipeline
+  The pycode directory contains everything you need to run the simplified version of the pipeline:
+  - sfm_class.py contains the BA code and all the functions used in the pipeline
+  - depg.py is the file to launch. Sorry if it is messy, I have added some comment lines to make it usable
+  - dataset contains the data for the statue dataset: images, ground truth data and initial estimates before BA.  
