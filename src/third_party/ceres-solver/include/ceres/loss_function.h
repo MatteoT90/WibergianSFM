@@ -183,6 +183,19 @@ class CERES_EXPORT HuberLoss : public LossFunction {
   const double b_;
 };
 
+// Adaptive loss addition
+class CERES_EXPORT AdaptiveLoss : public LossFunction {
+public:
+explicit AdaptiveLoss(double a, double c) : a_(a), c_(c) { }
+virtual void Evaluate(double, double*) const;
+
+private:
+// a = shape parameter for the loss
+const double a_;
+// c = scale factor.
+const double c_;
+};
+
 // Soft L1, similar to Huber but smooth.
 //
 //   rho(s) = 2 (sqrt(1 + s) - 1).

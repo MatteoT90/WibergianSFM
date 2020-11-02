@@ -60,6 +60,29 @@ void HuberLoss::Evaluate(double s, double rho[3]) const {
   }
 }
 
+void AdaptiveLoss::Evaluate(double s, double rho[3]) const {
+    const double xc = s*s/(c_ * c_);
+    if (a_ == 2) {
+        // Outlier region.
+        rho[0] = 0.5 * xc;
+        rho[1] = s/(c_ * c_);
+        rho[2] = 1./(c_ * c_);
+    } else if (a_ == 0) {
+        rho[0] = log(1+0.5*(xc));
+        rho[1] = 2 * s /(s*s + 2*c_*c_);
+        rho[2] = -2 * (s*s-2*c_*c_)/(2*c_*c_ + s*s);
+    } else if (a_ < -1 * std::numeric_limits<double>::max()){
+        rho[0] = 1 - exp(-0.5*(xc));
+        rho[1] =s*exp(-0.5*(xc))/(c_*c_);
+        rho[2] =(c_*c_ - s*s)*exp(-0.5*(xc))/(c_*c_*c_*c_);
+    } else {
+        const double am2 = abs(a_-2);
+        rho[0] = (pow(1+(xc/am2), 0.5*a_)- 1) * am2/a_;
+        rho[1] = pow(1+(xc/am2), 0.5*a_-1) * s/(c_*c_);
+        rho[2] = pow(1+(xc/am2), 0.5*a_-1)/(c_*c_) + pow(1+(xc/am2), 0.5*a_-2)*2*(0.5*a_-1)*xc/(am2*c_*c_);
+    }
+}
+
 void SoftLOneLoss::Evaluate(double s, double rho[3]) const {
   const double sum = 1.0 + s * c_;
   const double tmp = sqrt(sum);
