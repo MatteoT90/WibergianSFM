@@ -414,7 +414,7 @@ int main(int argc, char **argv)
   if (filter_ptr)
   {
     system::Timer timer;
-    const double d_distance_ratio = 0.6;
+    const double d_distance_ratio = 0.8;
 
     PairWiseMatches map_GeometricMatches;
     switch (eGeometricModelToCompute)

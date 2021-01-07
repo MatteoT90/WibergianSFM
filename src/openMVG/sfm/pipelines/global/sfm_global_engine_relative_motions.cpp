@@ -727,7 +727,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
         // Refine sfm_scene (in a 3 iteration process (free the parameters regarding their incertainty order)):
 
          Save(sfm_data_,
-         stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "wheredowegofromhere", ".bin"),
+         stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "init", ".bin"),
          ESfM_Data(ALL));
 
         Bundle_Adjustment_Ceres bundle_adjustment_obj;
@@ -791,15 +791,15 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
         }
 
         // Remove outliers (max_angle, residual error)
-        const size_t pointcount_initial = sfm_data_.structure.size();
-        RemoveOutliers_PixelResidualError(sfm_data_, 4.0);
-        const size_t pointcount_pixelresidual_filter = sfm_data_.structure.size();
-        RemoveOutliers_AngleError(sfm_data_, 2.0);
-        const size_t pointcount_angular_filter = sfm_data_.structure.size();
-        std::cout << "Outlier removal (remaining #points):\n"
-                  << "\t initial structure size #3DPoints: " << pointcount_initial << "\n"
-                  << "\t\t pixel residual filter  #3DPoints: " << pointcount_pixelresidual_filter << "\n"
-                  << "\t\t angular filter         #3DPoints: " << pointcount_angular_filter << std::endl;
+        // const size_t pointcount_initial = sfm_data_.structure.size();
+        // RemoveOutliers_PixelResidualError(sfm_data_, 4.0);
+        // const size_t pointcount_pixelresidual_filter = sfm_data_.structure.size();
+        // RemoveOutliers_AngleError(sfm_data_, 2.0);
+        // const size_t pointcount_angular_filter = sfm_data_.structure.size();
+        // std::cout << "Outlier removal (remaining #points):\n"
+        //          << "\t initial structure size #3DPoints: " << pointcount_initial << "\n"
+        //         << "\t\t pixel residual filter  #3DPoints: " << pointcount_pixelresidual_filter << "\n"
+        //        << "\t\t angular filter         #3DPoints: " << pointcount_angular_filter << std::endl;
 
         if (!sLogging_file_.empty())
         {
@@ -838,6 +838,10 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
                  stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "structure_04_outlier_removed", "ply"),
                  ESfM_Data(EXTRINSICS | STRUCTURE));
         }
+
+        Save(sfm_data_,
+             stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "final", ".bin"),
+             ESfM_Data(ALL));
 
         return b_BA_Status;
     }
