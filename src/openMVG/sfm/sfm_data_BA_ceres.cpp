@@ -377,125 +377,110 @@ bool Bundle_Adjustment_Ceres::Adjust
   }
 }
 
-bool Bundle_Adjustment_Ceres::GlobalAdjust
-(
-        double* pose, int l_pose,
-        double* intrinsics, int l_int,
-        double* cloud, int l_cloud,
-        double* features, int l_feat,
-        int* cams, int l_cam,
-        int* track, int l_track,
-        double* weight, int l_w,
-        int* vec_rows, int l_vr,
-        int* vec_cols, int l_vc,
-        double* vec_grad, int l_vg,
-        double* residuals_out, int l_res,
-        double* gradient_out, int l_grad,
-        int optimise
-)
+bool Bundle_Adjustment_Ceres::LastBA
+        (
+                double* pose, int l_pose,
+                double* intrinsics, int l_int,
+                double* cloud, int l_cloud,
+                double* features, int l_feat,
+                int* cams, int l_cam,
+                int* track, int l_track,
+                double* weight, int l_w,
+                int* vec_rows, int l_vr,
+                int* vec_cols, int l_vc,
+                double* vec_grad, int l_vg,
+                double* residuals_out, int l_res,
+                double* gradient_out, int l_grad
+        )
 {
 // Data wrapper for refinement:
-Hash_Map<IndexT, std::vector<double>> map_intrinsics;
-Hash_Map<IndexT, std::vector<double>> map_poses;
-Hash_Map<IndexT, Vec3> map_cloud;
-Hash_Map<IndexT, Vec2> map_obs;
+    Hash_Map<IndexT, std::vector<double>> map_intrinsics;
+    Hash_Map<IndexT, std::vector<double>> map_poses;
+    Hash_Map<IndexT, Vec3> map_cloud;
+    Hash_Map<IndexT, Vec2> map_obs;
 
 // Setup Poses data & subparametrization
-for (int ii = 0; ii < l_pose / 6; ii++){ map_poses[ii] = {pose[ii * 6], pose[ii * 6 + 1], pose[ii * 6 + 2],
-                                                          pose[ii * 6 + 3], pose[ii * 6 + 4], pose[ii * 6 + 5]};}
+    for (int ii = 0; ii < l_pose / 6; ii++){ map_poses[ii] = {pose[ii * 6], pose[ii * 6 + 1], pose[ii * 6 + 2],
+                                                              pose[ii * 6 + 3], pose[ii * 6 + 4], pose[ii * 6 + 5]};}
 
-for (int ii = 0; ii < l_int / 6; ii++){ map_intrinsics[ii] = {intrinsics[ii * 6], intrinsics[1 + ii * 6],
-                                                              intrinsics[2+ii*6], intrinsics[3+ii*6],
-                                                              intrinsics[4+ii*6], intrinsics[5+ii*6]};}
+    for (int ii = 0; ii < l_int / 6; ii++){ map_intrinsics[ii] = {intrinsics[ii * 6], intrinsics[1 + ii * 6],
+                                                                  intrinsics[2+ii*6], intrinsics[3+ii*6],
+                                                                  intrinsics[4+ii*6], intrinsics[5+ii*6]};}
 
-for(int ll = 0; ll < l_cloud / 3; ll++)
-        {map_cloud[ll] = (Vec3 () << cloud[3 * ll], cloud[3 * ll + 1], cloud[3 * ll + 2]).finished();}
-for(int ll = 0; ll < l_feat / 2; ll++)
-        {map_obs[ll] = (Vec2 () << features[2 * ll], features[2 * ll + 1]).finished();}
+    for(int ll = 0; ll < l_cloud / 3; ll++)
+    {map_cloud[ll] = (Vec3 () << cloud[3 * ll], cloud[3 * ll + 1], cloud[3 * ll + 2]).finished();}
+    for(int ll = 0; ll < l_feat / 2; ll++)
+    {map_obs[ll] = (Vec2 () << features[2 * ll], features[2 * ll + 1]).finished();}
 
-if(optimise != 0){
-    for(int mode; mode < 3; mode++)
+    ceres::Solver::Summary summary;
+
+//ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
+    ceres::Solver::Options ceres_config_options;
+    ceres_config_options.max_num_iterations = 500;
+    ceres_config_options.preconditioner_type =
+            static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
+    ceres_config_options.linear_solver_type =
+            static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
+
+// ceres_config_options.minimizer_type = ceres::TRUST_REGION;
+// ceres_config_options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+
+    ceres_config_options.sparse_linear_algebra_library_type =
+            static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
+    ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
+    ceres_config_options.logging_type = ceres::SILENT;
+    ceres_config_options.num_threads = ceres_options_.nb_threads_;
+#if CERES_VERSION_MAJOR < 2
+    ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
+#endif
+    ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
+
+    ceres::Problem problem;
+
+// std::cout << "Ceres problem sizes :: " << problem.NumParameterBlocks() << " " << problem.NumParameters()
+// << " " << problem.NumResidualBlocks() << " " << problem.NumResiduals() << "\n";
+
+    for (const auto & pose_it : map_poses)
     {
-        ceres::Solver::Summary summary;
-
-        //ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
-        ceres::Solver::Options ceres_config_options;
-        ceres_config_options.max_num_iterations = 500;
-        ceres_config_options.preconditioner_type =
-                static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
-        ceres_config_options.linear_solver_type =
-        static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
-
-        // ceres_config_options.minimizer_type = ceres::TRUST_REGION;
-        // ceres_config_options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-
-        ceres_config_options.sparse_linear_algebra_library_type =
-                static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
-        ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
-        ceres_config_options.logging_type = ceres::SILENT;
-        ceres_config_options.num_threads = ceres_options_.nb_threads_;
-        #if CERES_VERSION_MAJOR < 2
-        ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
-        #endif
-        ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
-
-        ceres::Problem problem;
-
-        // std::cout << "Ceres problem sizes :: " << problem.NumParameterBlocks() << " " << problem.NumParameters()
-        // << " " << problem.NumResidualBlocks() << " " << problem.NumResiduals() << "\n";
-
-        for (const auto & pose_it : map_poses)
-        {
-            const IndexT indexPose = pose_it.first;
-            double * parameter_block = &map_poses.at(indexPose)[0];
-            problem.AddParameterBlock(parameter_block, 6);
-            if(mode == 0)
-            {
-                std::vector<int> keep_constant;
-                keep_constant.insert(keep_constant.end(), {0,1,2});
-                ceres::SubsetParameterization *subset_parameterization = new ceres::SubsetParameterization(6, keep_constant);
-                problem.SetParameterization(parameter_block, subset_parameterization);
-            }
-        }
-
-        for (const auto & intrinsic_it : map_intrinsics)
-        {
-            const IndexT indexCam = intrinsic_it.first;
-            double * parameter_block = &map_intrinsics.at(indexCam)[0];
-            problem.AddParameterBlock(parameter_block, map_intrinsics.at(indexCam).size());
-            if(mode < 2)
-            {
-                problem.SetParameterBlockConstant(parameter_block);
-            }
-        }
-
-        for(int ll = 0; ll < l_feat / 2; ll++)
-        {
-        ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
-        //problem.AddResidualBlock(cost_function,
-        //                     p_LossFunction,
-        //                     &map_intrinsics.at(0)[0],
-        //                     &map_poses.at(cams[ll])[0],
-        //                     &map_cloud.at(track[ll])[0]);
-        //}
-
-	problem.AddResidualBlock(cost_function,
-				 NULL,
-				 &map_intrinsics.at(0)[0],
-				 &map_poses.at(cams[ll])[0],
-				 &map_cloud.at(track[ll])[0]);
-	}
-    
-	
-        ceres::Solve(ceres_config_options, &problem, &summary);
-        //std::cout << std::endl
-        //    << "Bundle Adjustment statistics (approximated RMSE):\n"
-        //    << " #residuals: " << summary.num_residuals << "\n"
-        //    << " Initial RMSE: " << std::sqrt( summary.initial_cost / summary.num_residuals) << "\n"
-        //    << " Final RMSE: " << std::sqrt( summary.final_cost / summary.num_residuals) << "\n"
-        //    << " Time (s): " << summary.total_time_in_seconds << "\n"
-        //    << std::endl;
+        const IndexT indexPose = pose_it.first;
+        double * parameter_block = &map_poses.at(indexPose)[0];
+        problem.AddParameterBlock(parameter_block, 6);
     }
+
+    for (const auto & intrinsic_it : map_intrinsics)
+    {
+        const IndexT indexCam = intrinsic_it.first;
+        double * parameter_block = &map_intrinsics.at(indexCam)[0];
+        problem.AddParameterBlock(parameter_block, map_intrinsics.at(indexCam).size());
+    }
+
+    for(int ll = 0; ll < l_feat / 2; ll++)
+    {
+        ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
+//problem.AddResidualBlock(cost_function,
+//                     p_LossFunction,
+//                     &map_intrinsics.at(0)[0],
+//                     &map_poses.at(cams[ll])[0],
+//                     &map_cloud.at(track[ll])[0]);
+//}
+
+        problem.AddResidualBlock(cost_function,
+                                 NULL,
+                                 &map_intrinsics.at(0)[0],
+                                 &map_poses.at(cams[ll])[0],
+                                 &map_cloud.at(track[ll])[0]);
+    }
+
+
+    ceres::Solve(ceres_config_options, &problem, &summary);
+//std::cout << std::endl
+//    << "Bundle Adjustment statistics (approximated RMSE):\n"
+//    << " #residuals: " << summary.num_residuals << "\n"
+//    << " Initial RMSE: " << std::sqrt( summary.initial_cost / summary.num_residuals) << "\n"
+//    << " Final RMSE: " << std::sqrt( summary.final_cost / summary.num_residuals) << "\n"
+//    << " Time (s): " << summary.total_time_in_seconds << "\n"
+//    << std::endl;
+
 
     for (int ii = 0; ii < l_pose / 6; ii++){
         for(int dc = 0; dc < 6; dc++){pose[ii * 6 + dc] = map_poses.at(ii)[dc];}
@@ -507,50 +492,46 @@ if(optimise != 0){
         for(int dc = 0; dc < 3; dc++){ cloud[ii * 3 + dc] = map_cloud.at(ii)[dc];}
     }
 
-}
-
 // std::cout << "Running just the gradient evaluation part \n";
 
-ceres::Solver::Summary summary;
-ceres::CRSMatrix jacob;
-double cost = 0;
-std::vector <double> residuals;
-std::vector <double> gradients;
+    ceres::CRSMatrix jacob;
+    double cost = 0;
+    std::vector <double> residuals;
+    std::vector <double> gradients;
 
-ceres::Problem eval_problem;
+    ceres::Problem eval_problem;
 
 //ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
-ceres::Solver::Options ceres_config_options;
-ceres_config_options.max_num_iterations = 500;
-ceres_config_options.preconditioner_type =
-        static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
-ceres_config_options.linear_solver_type =
-static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
-ceres_config_options.sparse_linear_algebra_library_type =
-        static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
-ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
-ceres_config_options.logging_type = ceres::SILENT;
-ceres_config_options.num_threads = ceres_options_.nb_threads_;
+    ceres_config_options.max_num_iterations = 500;
+    ceres_config_options.preconditioner_type =
+            static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
+    ceres_config_options.linear_solver_type =
+            static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
+    ceres_config_options.sparse_linear_algebra_library_type =
+            static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
+    ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
+    ceres_config_options.logging_type = ceres::SILENT;
+    ceres_config_options.num_threads = ceres_options_.nb_threads_;
 #if CERES_VERSION_MAJOR < 2
-ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
+    ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
 #endif
-ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
+    ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
 
-for (const auto & pose_it : map_poses)
-{
-    const IndexT indexPose = pose_it.first;
-    double * parameter_block = &map_poses.at(indexPose)[0];
-    eval_problem.AddParameterBlock(parameter_block, 6);
-}
-for (const auto & intrinsic_it : map_intrinsics)
-{
-    const IndexT indexCam = intrinsic_it.first;
-    double * parameter_block = &map_intrinsics.at(indexCam)[0];
-    eval_problem.AddParameterBlock(parameter_block, map_intrinsics.at(indexCam).size());
-}
-for(int ll = 0; ll < l_feat / 2; ll++)
-{
-ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
+    for (const auto & pose_it : map_poses)
+    {
+        const IndexT indexPose = pose_it.first;
+        double * parameter_block = &map_poses.at(indexPose)[0];
+        eval_problem.AddParameterBlock(parameter_block, 6);
+    }
+    for (const auto & intrinsic_it : map_intrinsics)
+    {
+        const IndexT indexCam = intrinsic_it.first;
+        double * parameter_block = &map_intrinsics.at(indexCam)[0];
+        eval_problem.AddParameterBlock(parameter_block, map_intrinsics.at(indexCam).size());
+    }
+    for(int ll = 0; ll < l_feat / 2; ll++)
+    {
+        ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
 //eval_problem.AddResidualBlock(cost_function,
 //                              p_LossFunction,
 //                              &map_intrinsics.at(0)[0],
@@ -558,31 +539,240 @@ ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radi
 //                              &map_cloud.at(track[ll])[0]);
 //}
 
-eval_problem.AddResidualBlock(cost_function,
-			       NULL,
-			       &map_intrinsics.at(0)[0],
-			       &map_poses.at(cams[ll])[0],
-			       &map_cloud.at(track[ll])[0]);
-}
-  
- 
+        eval_problem.AddResidualBlock(cost_function,
+                                      NULL,
+                                      &map_intrinsics.at(0)[0],
+                                      &map_poses.at(cams[ll])[0],
+                                      &map_cloud.at(track[ll])[0]);
+    }
+
+
 // problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacob);
-eval_problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, &residuals, &gradients, &jacob);
+    eval_problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, &residuals, &gradients, &jacob);
 
-for(int ii=0; ii<jacob.rows.size(); ii++)  {vec_rows[2+ii] = jacob.rows[ii];}
-for(int ii=0; ii<jacob.cols.size(); ii++)  {vec_cols[2+ii] = jacob.cols[ii];}
-for(int ii=0; ii<jacob.values.size(); ii++){vec_grad[1+ii] = jacob.values[ii];}
-for(int ii=0; ii<residuals.size(); ii++){residuals_out[1+ii] = residuals[ii];}
-for(int ii=0; ii<gradients.size(); ii++){gradient_out[1+ii] = gradients[ii];}
+    for(int ii=0; ii<jacob.rows.size(); ii++)  {vec_rows[2+ii] = jacob.rows[ii];}
+    for(int ii=0; ii<jacob.cols.size(); ii++)  {vec_cols[2+ii] = jacob.cols[ii];}
+    for(int ii=0; ii<jacob.values.size(); ii++){vec_grad[1+ii] = jacob.values[ii];}
+    for(int ii=0; ii<residuals.size(); ii++){residuals_out[1+ii] = residuals[ii];}
+    for(int ii=0; ii<gradients.size(); ii++){gradient_out[1+ii] = gradients[ii];}
 
-vec_rows[0] = jacob.rows.size();
-vec_cols[0] = jacob.cols.size(); vec_grad[0] = jacob.values.size();
-vec_rows[1] = jacob.num_rows; vec_cols[1] = jacob.num_cols;
-residuals_out[0] = residuals.size();
-gradient_out[0] = gradients.size();
+    vec_rows[0] = jacob.rows.size();
+    vec_cols[0] = jacob.cols.size(); vec_grad[0] = jacob.values.size();
+    vec_rows[1] = jacob.num_rows; vec_cols[1] = jacob.num_cols;
+    residuals_out[0] = residuals.size();
+    gradient_out[0] = gradients.size();
 
-return true;
+    return true;
 }
+
+
+bool Bundle_Adjustment_Ceres::GlobalAdjust
+        (
+                double* pose, int l_pose,
+                double* intrinsics, int l_int,
+                double* cloud, int l_cloud,
+                double* features, int l_feat,
+                int* cams, int l_cam,
+                int* track, int l_track,
+                double* weight, int l_w,
+                int* vec_rows, int l_vr,
+                int* vec_cols, int l_vc,
+                double* vec_grad, int l_vg,
+                double* residuals_out, int l_res,
+                double* gradient_out, int l_grad,
+                int optimise
+        )
+{
+    // Data wrapper for refinement:
+    Hash_Map<IndexT, std::vector<double>> map_intrinsics;
+    Hash_Map<IndexT, std::vector<double>> map_poses;
+    Hash_Map<IndexT, Vec3> map_cloud;
+    Hash_Map<IndexT, Vec2> map_obs;
+
+    // Setup Poses data & subparametrization
+    for (int ii = 0; ii < l_pose / 6; ii++){ map_poses[ii] = {pose[ii * 6], pose[ii * 6 + 1], pose[ii * 6 + 2],
+                                                              pose[ii * 6 + 3], pose[ii * 6 + 4], pose[ii * 6 + 5]};}
+
+    for (int ii = 0; ii < l_int / 6; ii++){ map_intrinsics[ii] = {intrinsics[ii * 6], intrinsics[1 + ii * 6],
+                                                                  intrinsics[2+ii*6], intrinsics[3+ii*6],
+                                                                  intrinsics[4+ii*6], intrinsics[5+ii*6]};}
+
+    for(int ll = 0; ll < l_cloud / 3; ll++)
+    {map_cloud[ll] = (Vec3 () << cloud[3 * ll], cloud[3 * ll + 1], cloud[3 * ll + 2]).finished();}
+    for(int ll = 0; ll < l_feat / 2; ll++)
+    {map_obs[ll] = (Vec2 () << features[2 * ll], features[2 * ll + 1]).finished();}
+
+    if(optimise != 0){
+        for(int mode; mode < 3; mode++)
+        {
+            ceres::Solver::Summary summary;
+
+            //ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
+            ceres::Solver::Options ceres_config_options;
+            ceres_config_options.max_num_iterations = 500;
+            ceres_config_options.preconditioner_type =
+                    static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
+            ceres_config_options.linear_solver_type =
+                    static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
+
+            // ceres_config_options.minimizer_type = ceres::TRUST_REGION;
+            // ceres_config_options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+
+            ceres_config_options.sparse_linear_algebra_library_type =
+                    static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
+            ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
+            ceres_config_options.logging_type = ceres::SILENT;
+            ceres_config_options.num_threads = ceres_options_.nb_threads_;
+    #if CERES_VERSION_MAJOR < 2
+            ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
+    #endif
+            ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
+
+            ceres::Problem problem;
+
+            // std::cout << "Ceres problem sizes :: " << problem.NumParameterBlocks() << " " << problem.NumParameters()
+            // << " " << problem.NumResidualBlocks() << " " << problem.NumResiduals() << "\n";
+
+            for (const auto & pose_it : map_poses)
+            {
+                const IndexT indexPose = pose_it.first;
+                double * parameter_block = &map_poses.at(indexPose)[0];
+                problem.AddParameterBlock(parameter_block, 6);
+                if(mode == 0)
+                {
+                    std::vector<int> keep_constant;
+                    keep_constant.insert(keep_constant.end(), {0,1,2});
+                    ceres::SubsetParameterization *subset_parameterization = new ceres::SubsetParameterization(6, keep_constant);
+                    problem.SetParameterization(parameter_block, subset_parameterization);
+                }
+            }
+
+            for (const auto & intrinsic_it : map_intrinsics)
+            {
+                const IndexT indexCam = intrinsic_it.first;
+                double * parameter_block = &map_intrinsics.at(indexCam)[0];
+                problem.AddParameterBlock(parameter_block, map_intrinsics.at(indexCam).size());
+                if(mode < 2)
+                {
+                    problem.SetParameterBlockConstant(parameter_block);
+                }
+            }
+
+            for(int ll = 0; ll < l_feat / 2; ll++)
+            {
+                ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
+                //problem.AddResidualBlock(cost_function,
+                //                     p_LossFunction,
+                //                     &map_intrinsics.at(0)[0],
+                //                     &map_poses.at(cams[ll])[0],
+                //                     &map_cloud.at(track[ll])[0]);
+                //}
+
+                problem.AddResidualBlock(cost_function,
+                                         NULL,
+                                         &map_intrinsics.at(0)[0],
+                                         &map_poses.at(cams[ll])[0],
+                                         &map_cloud.at(track[ll])[0]);
+            }
+
+
+            ceres::Solve(ceres_config_options, &problem, &summary);
+            //std::cout << std::endl
+            //    << "Bundle Adjustment statistics (approximated RMSE):\n"
+            //    << " #residuals: " << summary.num_residuals << "\n"
+            //    << " Initial RMSE: " << std::sqrt( summary.initial_cost / summary.num_residuals) << "\n"
+            //    << " Final RMSE: " << std::sqrt( summary.final_cost / summary.num_residuals) << "\n"
+            //    << " Time (s): " << summary.total_time_in_seconds << "\n"
+            //    << std::endl;
+        }
+
+        for (int ii = 0; ii < l_pose / 6; ii++){
+            for(int dc = 0; dc < 6; dc++){pose[ii * 6 + dc] = map_poses.at(ii)[dc];}
+        }
+        for (int ii = 0; ii < l_int / 6; ii++){
+            for(int dc = 0; dc < 6; dc++){ intrinsics[ii * 6 + dc] = map_intrinsics.at(ii)[dc];}
+        }
+        for (int ii = 0; ii < l_cloud / 3; ii++){
+            for(int dc = 0; dc < 3; dc++){ cloud[ii * 3 + dc] = map_cloud.at(ii)[dc];}
+        }
+
+    }
+
+// std::cout << "Running just the gradient evaluation part \n";
+
+    ceres::Solver::Summary summary;
+    ceres::CRSMatrix jacob;
+    double cost = 0;
+    std::vector <double> residuals;
+    std::vector <double> gradients;
+
+    ceres::Problem eval_problem;
+
+//ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
+    ceres::Solver::Options ceres_config_options;
+    ceres_config_options.max_num_iterations = 500;
+    ceres_config_options.preconditioner_type =
+            static_cast<ceres::PreconditionerType>(ceres_options_.preconditioner_type_);
+    ceres_config_options.linear_solver_type =
+            static_cast<ceres::LinearSolverType>(ceres_options_.linear_solver_type_);
+    ceres_config_options.sparse_linear_algebra_library_type =
+            static_cast<ceres::SparseLinearAlgebraLibraryType>(ceres_options_.sparse_linear_algebra_library_type_);
+    ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
+    ceres_config_options.logging_type = ceres::SILENT;
+    ceres_config_options.num_threads = ceres_options_.nb_threads_;
+#if CERES_VERSION_MAJOR < 2
+    ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
+#endif
+    ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
+
+    for (const auto & pose_it : map_poses)
+    {
+        const IndexT indexPose = pose_it.first;
+        double * parameter_block = &map_poses.at(indexPose)[0];
+        eval_problem.AddParameterBlock(parameter_block, 6);
+    }
+    for (const auto & intrinsic_it : map_intrinsics)
+    {
+        const IndexT indexCam = intrinsic_it.first;
+        double * parameter_block = &map_intrinsics.at(indexCam)[0];
+        eval_problem.AddParameterBlock(parameter_block, map_intrinsics.at(indexCam).size());
+    }
+    for(int ll = 0; ll < l_feat / 2; ll++)
+    {
+        ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
+//eval_problem.AddResidualBlock(cost_function,
+//                              p_LossFunction,
+//                              &map_intrinsics.at(0)[0],
+//                              &map_poses.at(cams[ll])[0],
+//                              &map_cloud.at(track[ll])[0]);
+//}
+
+        eval_problem.AddResidualBlock(cost_function,
+                                      NULL,
+                                      &map_intrinsics.at(0)[0],
+                                      &map_poses.at(cams[ll])[0],
+                                      &map_cloud.at(track[ll])[0]);
+    }
+
+
+// problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacob);
+    eval_problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, &residuals, &gradients, &jacob);
+
+    for(int ii=0; ii<jacob.rows.size(); ii++)  {vec_rows[2+ii] = jacob.rows[ii];}
+    for(int ii=0; ii<jacob.cols.size(); ii++)  {vec_cols[2+ii] = jacob.cols[ii];}
+    for(int ii=0; ii<jacob.values.size(); ii++){vec_grad[1+ii] = jacob.values[ii];}
+    for(int ii=0; ii<residuals.size(); ii++){residuals_out[1+ii] = residuals[ii];}
+    for(int ii=0; ii<gradients.size(); ii++){gradient_out[1+ii] = gradients[ii];}
+
+    vec_rows[0] = jacob.rows.size();
+    vec_cols[0] = jacob.cols.size(); vec_grad[0] = jacob.values.size();
+    vec_rows[1] = jacob.num_rows; vec_cols[1] = jacob.num_cols;
+    residuals_out[0] = residuals.size();
+    gradient_out[0] = gradients.size();
+
+    return true;
+}
+
 
 bool Bundle_Adjustment_Ceres::GlobalAdjustHuber
         (

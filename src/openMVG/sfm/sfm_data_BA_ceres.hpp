@@ -97,6 +97,21 @@ class Bundle_Adjustment_Ceres : public Bundle_Adjustment
             int optimise
     );
 
+    bool LastBA
+            (       double* pose, int l_pose,
+                    double* intrinsics, int l_int,
+                    double* cloud, int l_cloud,
+                    double* features, int l_feat,
+                    int* cams, int l_cam,
+                    int* track, int l_track,
+                    double* weight, int l_w,
+                    int* vec_rows, int l_vr,
+                    int* vec_cols, int l_vc,
+                    double* vec_grad, int l_vg,
+                    double* residuals_out, int l_res,
+                    double* gradient_out, int l_grad
+              );
+
   bool GlobalAdjustHuber
     (       double* pose, int l_pose,
             double* intrinsics, int l_int,
