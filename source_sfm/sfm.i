@@ -52,6 +52,12 @@ int BAonly(double* pose, int l_pose, double* intrinsics, int l_int, double* clou
             int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* residuals, int l_res, double* gradient,
             int l_grad);
 
+int BAonlyHuber(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
+           int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w, int* vec_rows, int l_vr,
+           int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* residuals, int l_res, double* gradient,
+           int l_grad);
+
+
 int ceresBAHuber(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
             int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w, int* vec_rows, int l_vr,
             int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* residuals, int l_res, double* gradient,

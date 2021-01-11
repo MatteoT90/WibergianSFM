@@ -200,6 +200,19 @@ int BAonly(double* pose, int l_pose, double* intrinsics, int l_int, double* clou
     return oo;
 }
 
+int BAonlyHuber(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
+           int l_feat, int* cams, int l_cam, int* track, int l_track, double* weight, int l_w, int* vec_rows, int l_vr,
+           int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* residuals_out, int l_res, double* gradient_out,
+           int l_grad)
+{
+
+    Bundle_Adjustment_Ceres bundle_adjustment_obj;
+
+    int oo = bundle_adjustment_obj.LastBAHuber(pose, l_pose, intrinsics, l_int, cloud, l_cloud, features, l_feat, cams,
+                                          l_cam, track, l_track, weight, l_w, vec_rows, l_vr, vec_cols, l_vc, vec_grad, l_vg, residuals_out, l_res,
+                                          gradient_out, l_grad);
+    return oo;
+}
 
 int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
         int l_feat, int* cams, int l_cam, int* track, int l_track, double* weight, int l_w, int* vec_rows, int l_vr,
