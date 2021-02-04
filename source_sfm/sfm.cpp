@@ -186,6 +186,68 @@ void import_data(std::string sSfM_Data_Filename, double* poses3d, int d, double*
 }
 
 
+void import_feats(std::string sSfM_Data_Filename, double* observation2d, int f, int* camera, int c, int* track,
+                  int e, int* view, int vi)
+{
+    SfM_Data sfm_data;
+    if (!Load(sfm_data, sSfM_Data_Filename, ESfM_Data(ALL))) {
+        std::cerr << std::endl
+                  << "The input SfM_Data file \""<< sSfM_Data_Filename << "\" cannot be read." << std::endl;
+        return;
+    }
+    int pose_id = 0;
+    for (auto & pose_it : sfm_data.poses)
+    {
+        const IndexT indexPose = pose_it.first;
+        const Pose3 & pose = pose_it.second;
+        const Vec3 t = pose.translation();
+        const Mat3 R = pose.rotation();
+        double angleAxis[3];
+        sfm::extract_rotation(R, angleAxis);
+        view[pose_id] = indexPose;
+        pose_id++;
+    }
+
+    int count = 0;
+    int count2 = 0;
+    for (auto & structure_landmark_it : sfm_data.structure)
+    {
+        const IndexT indexPose1 = structure_landmark_it.first;
+        const Observations & obs = structure_landmark_it.second.obs;
+        Eigen::Matrix<double,3,1> obs3d = structure_landmark_it.second.X;
+        vector<double> obs_read3d(obs3d.data(), obs3d.data() + obs3d.size());
+        for (const auto & obs_it : obs)
+        {
+            const View * view = sfm_data.views.at(obs_it.first).get();
+            const IndexT indexPose2 = obs_it.first;
+            Eigen::Matrix<double,2,1> obs2d = obs_it.second.x;
+            vector<double> obs_read(obs2d.data(), obs2d.data() + obs2d.size());
+            for(int ii=0; ii<obs_read.size(); ii++){observation2d[count * 2 + ii] = obs_read[ii];}
+            track [count+1] = count2;
+            camera[count+1] = view->id_pose;
+            count ++;
+        }
+        count2 ++;
+    }
+
+    track[0] = count;
+    camera[0] = count;
+    return;
+}
+
+
+int CloudOnly(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
+           int l_feat, int* cams, int l_cam, int* track, int l_track, double* residuals_out, int l_res)
+{
+
+    Bundle_Adjustment_Ceres bundle_adjustment_obj;
+
+    int oo = bundle_adjustment_obj.CloudOnly(pose, l_pose, intrinsics, l_int, cloud, l_cloud, features, l_feat, cams,
+                                          l_cam, track, l_track, residuals_out, l_res);
+    return oo;
+}
+
+
 int BAonly(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
             int l_feat, int* cams, int l_cam, int* track, int l_track, double* weight, int l_w, int* vec_rows, int l_vr,
             int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* residuals_out, int l_res, double* gradient_out,

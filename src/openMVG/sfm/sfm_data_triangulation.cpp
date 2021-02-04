@@ -181,7 +181,7 @@ const
         Vec3 X;
         if (track_triangulation(sfm_data, obs, X))
         {
-          // Keep the point only if it has a positive depth for all obs
+            // Keep the point only if it has a positive depth for all obs
           if (track_check_predicate(obs, sfm_data, X, cheirality_predicate))
           {
             tracks_it.second.X = X;

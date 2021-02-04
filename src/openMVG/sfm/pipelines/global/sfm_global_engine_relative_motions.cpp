@@ -727,7 +727,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
         // Refine sfm_scene (in a 3 iteration process (free the parameters regarding their incertainty order)):
 
          Save(sfm_data_,
-         stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "init", ".bin"),
+         stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "init", ".json"),
          ESfM_Data(ALL));
 
         Bundle_Adjustment_Ceres bundle_adjustment_obj;
@@ -791,7 +791,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
         }
 
         Save(sfm_data_,
-             stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "before_filtering", ".bin"),
+             stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "before_filtering", ".json"),
              ESfM_Data(ALL));
 
         // Remove outliers (max_angle, residual error)
@@ -808,8 +808,8 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
         if (!sLogging_file_.empty())
         {
             Save(sfm_data_,
-                 stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "structure_03_outlier_removed", "bin"),
-                 ESfM_Data(EXTRINSICS | STRUCTURE));
+                 stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "structure_03_outlier_removed", "json"),
+                 ESfM_Data(ALL));
         }
 
         // Check that poses & intrinsic cover some measures (after outlier removal)
@@ -844,7 +844,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
         }
 
         Save(sfm_data_,
-             stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "final", ".bin"),
+             stlplus::create_filespec(stlplus::folder_part(sLogging_file_), "final", ".json"),
              ESfM_Data(ALL));
 
         return b_BA_Status;

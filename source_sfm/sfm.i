@@ -41,6 +41,10 @@ int fullBA( std::string sSfM_Data_Filename, std::string sMatchesDir, std::string
 void import_data(std::string sSfM_Data_Filename, double* pose, int l_pose, double* intrinsics, int l_int,
         double* cloud, int l_cloud, int* pcloud_idx, int pc, double* features, int l_feat, int* camera, int l_cam,
         int* track, int l_track, int* view, int vi, double* fullrot, int fr);
+
+void import_feats(std::string sSfM_Data_Filename, double* features, int l_feat, int* camera, int l_cam, int* track,
+        int l_track, int* view, int vi);
+
 %newobject ceresBA;
 int ceresBA(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
         int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w, int* vec_rows, int l_vr,
@@ -51,6 +55,9 @@ int BAonly(double* pose, int l_pose, double* intrinsics, int l_int, double* clou
             int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w, int* vec_rows, int l_vr,
             int* vec_cols, int l_vc, double* vec_grad, int l_vg, double* residuals, int l_res, double* gradient,
             int l_grad);
+
+int CloudOnly(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
+              int l_feat, int* camera, int l_cam, int* track, int l_track, double* residuals, int l_res);
 
 int BAonlyHuber(double* pose, int l_pose, double* intrinsics, int l_int, double* cloud, int l_cloud, double* features,
            int l_feat, int* camera, int l_cam, int* track, int l_track, double* weights, int l_w, int* vec_rows, int l_vr,

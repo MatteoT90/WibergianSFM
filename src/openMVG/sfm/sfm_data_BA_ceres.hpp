@@ -81,6 +81,17 @@ class Bundle_Adjustment_Ceres : public Bundle_Adjustment
     double* vec_grad, int i
   );
 
+  bool CloudOnly
+    (
+            double* pose, int l_pose,
+            double* intrinsics, int l_int,
+            double* cloud, int l_cloud,
+            double* features, int l_feat,
+            int* cams, int l_cam,
+            int* track, int l_track,
+            double* residuals_out, int l_res
+    );
+
   bool GlobalAdjust
     (       double* pose, int l_pose,
             double* intrinsics, int l_int,
