@@ -60,6 +60,22 @@ void HuberLoss::Evaluate(double s, double rho[3]) const {
   }
 }
 
+void HuberLossScaled::Evaluate(double s, double rho[3]) const {
+    if (s > b_) {
+        // Outlier region.
+        // 'r' is always positive.
+        const double r = sqrt(s);
+        rho[0] = w_*(2.0 * a_ * r - b_);
+        rho[1] = w_*std::max(std::numeric_limits<double>::min(), a_ / r);
+        rho[2] = - w_*rho[1] / (2.0 * s);
+    } else {
+        // Inlier region.
+        rho[0] = w_*s;
+        rho[1] = w_*1.0;
+        rho[2] = 0.0;
+    }
+}
+
 void AdaptiveLoss::Evaluate(double s, double rho[3]) const {
     const double xc = s / c_;
     if (abs(a_ -2) < 0.000001) {

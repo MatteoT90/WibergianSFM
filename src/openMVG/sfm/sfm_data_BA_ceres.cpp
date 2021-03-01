@@ -1123,7 +1123,7 @@ bool Bundle_Adjustment_Ceres::GlobalAdjustHuber
         {
             ceres::Solver::Summary summary;
 
-            ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
+            // ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
             ceres::Solver::Options ceres_config_options;
             ceres_config_options.max_num_iterations = 500;
             ceres_config_options.preconditioner_type =
@@ -1139,9 +1139,9 @@ bool Bundle_Adjustment_Ceres::GlobalAdjustHuber
             ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
             ceres_config_options.logging_type = ceres::SILENT;
             ceres_config_options.num_threads = ceres_options_.nb_threads_;
-#if CERES_VERSION_MAJOR < 2
+            #if CERES_VERSION_MAJOR < 2
             ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
-#endif
+            #endif
             ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
 
             ceres::Problem problem;
@@ -1176,7 +1176,9 @@ bool Bundle_Adjustment_Ceres::GlobalAdjustHuber
 
             for(int ll = 0; ll < l_feat / 2; ll++)
             {
-                ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
+                ceres::LossFunction * p_LossFunction = new ceres::HuberLossScaled(Square(4.0), weight[ll]);
+                // ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
+                ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll]);
                 problem.AddResidualBlock(cost_function,
                                      p_LossFunction,
                                      &map_intrinsics.at(0)[0],
@@ -1224,7 +1226,7 @@ bool Bundle_Adjustment_Ceres::GlobalAdjustHuber
 
     ceres::Problem eval_problem;
 
-    ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
+    // ceres::LossFunction * p_LossFunction = new ceres::HuberLoss(Square(4.0));
     ceres::Solver::Options ceres_config_options;
     ceres_config_options.max_num_iterations = 500;
     ceres_config_options.preconditioner_type =
@@ -1236,9 +1238,9 @@ bool Bundle_Adjustment_Ceres::GlobalAdjustHuber
     ceres_config_options.minimizer_progress_to_stdout = ceres_options_.bVerbose_;
     ceres_config_options.logging_type = ceres::SILENT;
     ceres_config_options.num_threads = ceres_options_.nb_threads_;
-#if CERES_VERSION_MAJOR < 2
+    #if CERES_VERSION_MAJOR < 2
     ceres_config_options.num_linear_solver_threads = ceres_options_.nb_threads_;
-#endif
+    #endif
     ceres_config_options.parameter_tolerance = ceres_options_.parameter_tolerance_;
 
     for (const auto & pose_it : map_poses)
@@ -1255,20 +1257,14 @@ bool Bundle_Adjustment_Ceres::GlobalAdjustHuber
     }
     for(int ll = 0; ll < l_feat / 2; ll++)
     {
-        ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll], weight[ll]);
+        ceres::LossFunction * p_LossFunction = new ceres::HuberLossScaled(Square(4.0), weight[ll]);
+        ceres::CostFunction* cost_function = ResidualErrorFunctor_Pinhole_Intrinsic_Radial_K3::Create(map_obs[ll]);
         eval_problem.AddResidualBlock(cost_function,
         p_LossFunction,
         &map_intrinsics.at(0)[0],
         &map_poses.at(cams[ll])[0],
         &map_cloud.at(track[ll])[0]);
     }
-
-        //eval_problem.AddResidualBlock(cost_function,
-        //                              NULL,
-        //                              &map_intrinsics.at(0)[0],
-        //                              &map_poses.at(cams[ll])[0],
-        //                              &map_cloud.at(track[ll])[0]);
-        //}
 
 
     // problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacob);

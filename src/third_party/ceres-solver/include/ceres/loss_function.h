@@ -183,6 +183,18 @@ class CERES_EXPORT HuberLoss : public LossFunction {
   const double b_;
 };
 
+class CERES_EXPORT HuberLossScaled : public LossFunction {
+    public:
+        explicit HuberLossScaled(double a, double w) : a_(a), b_(a * a), w_(w) { }
+        virtual void Evaluate(double, double*) const;
+
+    private:
+        const double a_;
+        // b = a^2.
+        const double b_;
+        const double w_;
+};
+
 // Adaptive loss addition
 class CERES_EXPORT AdaptiveLoss : public LossFunction {
 public:
