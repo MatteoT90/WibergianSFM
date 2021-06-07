@@ -10,6 +10,8 @@ This repo contains the altered version of the OpenMVG pipeline, and the code to 
   d) Add the my_build directory to your PATH and LD_PATH
      export PATH=$some_path_on_your_machine/my_bin/bin:$PATH
      export LD_LIBRARY_PATH=$some_path_on_your_machine/my_bin/lib/:$LD_LIBRARY_PATH
+     Install the cecessary libraries via apt-get install python-dev
+     Force library link updates via sudo ldconfig
   e) cd .. && mkdir build_sfm && cd build_sfm
   f) cmake ../source_sfm . && make
   g) You now have the wrapper files, just copy sfm.py and _sfm.so to the pycode directory.
